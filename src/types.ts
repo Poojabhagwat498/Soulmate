@@ -6,6 +6,7 @@ export interface Profile {
   location: string;
   community: string;
   imageUrl: string;
+  images: string[];
   verified: boolean;
   matchPercentage?: number;
   about?: string;
@@ -18,4 +19,24 @@ export interface Profile {
   diet?: string;
   drinkSmoke?: string;
   interests?: string[];
+  gender?: string;
+  dateOfBirth?: string;
+  religion?: string;
+  caste?: string;
+  gotra?: string;
+  manglik?: string;
+  familyType?: string;
+  familyStatus?: string;
+  fatherOccupation?: string;
+  motherOccupation?: string;
+  siblings?: string;
+  hometown?: string;
+  residencyStatus?: string;
+  horoscope?: string;
+  complexion?: string;
+  bodyType?: string;
+  disability?: string;
+  educationDetail?: string;
+  additionalDegrees?: string[];
+  languagesKnown?: string[];
 }
