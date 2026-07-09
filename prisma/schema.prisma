@@ -1,0 +1,146 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  COMMUNITY_ADMIN
+  USER
+}
+
+enum AdminStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REQUEST_REUPLOAD
+}
+
+enum NotificationRecipient {
+  ALL_USERS
+  SPECIFIC_COMMUNITY
+  COMMUNITY_ADMINS
+}
+
+model Community {
+  id              String           @id @default(uuid())
+  name            String           @unique // e.g., "Maratha", "Kunbi", "Mali", "Dhangar", "Brahmin", "Jain", "Lingayat"
+  description     String?
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  
+  // Relations
+  users           User[]
+  communityAdmin  CommunityAdmin?
+  notifications   Notification[]
+}
+
+model CommunityAdmin {
+  id              String      @id @default(uuid())
+  username        String      @unique
+  email           String      @unique
+  passwordHash    String
+  status          AdminStatus @default(ACTIVE)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  communityId     String      @unique
+  community       Community   @relation(fields: [communityId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id              String      @id @default(uuid())
+  email           String      @unique
+  passwordHash    String
+  role            Role        @default(USER)
+  status          UserStatus  @default(ACTIVE)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  communityId     String
+  community       Community   @relation(fields: [communityId], references: [id])
+  profile         Profile?
+  auditLogs       AuditLog[]
+}
+
+model Profile {
+  id              String             @id @default(uuid())
+  userId          String             @unique
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name            String
+  age             Int
+  gender          String             // "Male", "Female", "Other"
+  occupation      String
+  location        String
+  education       String
+  income          String
+  imageUrl        String
+  verified        Boolean            @default(false)
+  verificationStatus VerificationStatus @default(PENDING)
+  bio             String?
+
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  // Relations
+  verifications   Verification[]
+}
+
+model Verification {
+  id              String             @id @default(uuid())
+  profileId       String
+  profile         Profile            @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  status          VerificationStatus @default(PENDING)
+  documentType    String             // e.g. "Aadhaar Card", "Passport", "Driving License"
+  documentUrl     String             // URL to the verification file
+  adminNotes      String?
+  
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+}
+
+model Notification {
+  id              String                @id @default(uuid())
+  title           String
+  message         String
+  recipientType   NotificationRecipient
+  createdAt       DateTime              @default(now())
+
+  // Relations
+  communityId     String?
+  community       Community?            @relation(fields: [communityId], references: [id])
+}
+
+model AuditLog {
+  id              String   @id @default(uuid())
+  action          String   // e.g., "CREATE_COMMUNITY", "APPROVE_PROFILE", "SUSPEND_ADMIN"
+  details         String   // JSON text of what changed
+  ipAddress       String?
+  createdAt       DateTime @default(now())
+
+  // Relations
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

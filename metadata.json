@@ -1,0 +1,6 @@
+{
+  "name": "SoulMate",
+  "description": "A premium community matrimony platform blending tradition with modern matchmaking.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
